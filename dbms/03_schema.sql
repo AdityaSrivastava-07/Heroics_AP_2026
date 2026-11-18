@@ -1,105 +1,63 @@
--- ============================================================================
--- Heroics AP 2026: Campus Event & Club Management Platform
--- Raw PostgreSQL DDL converted from Prisma Schema
--- File: dbms/03_schema.sql
--- ============================================================================
+-- Create Enums
+CREATE TYPE "Role" AS ENUM ('HERO', 'GUILD_MASTER', 'ADMIN');
+CREATE TYPE "QuestStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'COMPLETED');
 
--- 1. ENUM Types
-CREATE TYPE "Role" AS ENUM ('STUDENT', 'CLUB_HEAD', 'ADMIN');
-CREATE TYPE "EventStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED');
-CREATE TYPE "RegStatus" AS ENUM ('REGISTERED', 'WAITLISTED', 'CANCELLED');
-
--- 2. Tables
-
--- User Table
-CREATE TABLE "User" (
+-- Create Hero Table
+CREATE TABLE "Hero" (
     "id" SERIAL PRIMARY KEY,
-    "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL UNIQUE,
-    "passwordHash" TEXT NOT NULL,
-    "role" "Role" NOT NULL DEFAULT 'STUDENT',
-    "rollNo" TEXT,
-    "branch" TEXT,
-    "year" INTEGER,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "name" VARCHAR(255) NOT NULL,
+    "email" VARCHAR(255) NOT NULL UNIQUE,
+    "passwordHash" VARCHAR(255) NOT NULL,
+    "role" "Role" NOT NULL DEFAULT 'HERO',
+    "xp" INTEGER NOT NULL DEFAULT 0,
+    "level" INTEGER NOT NULL DEFAULT 1,
+    "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Club Table (1:1 relationship with User as ClubHead)
-CREATE TABLE "Club" (
+-- Create Guild Table
+CREATE TABLE "Guild" (
     "id" SERIAL PRIMARY KEY,
-    "name" TEXT NOT NULL UNIQUE,
+    "name" VARCHAR(255) NOT NULL UNIQUE,
     "description" TEXT NOT NULL,
-    "logoUrl" TEXT,
+    "logoUrl" VARCHAR(255),
     "headId" INTEGER NOT NULL UNIQUE,
-    CONSTRAINT "Club_headId_fkey"
-        FOREIGN KEY ("headId") REFERENCES "User"("id")
-        ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Guild_headId_fkey" FOREIGN KEY ("headId") REFERENCES "Hero"("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
--- Event Table (N:1 relationship with Club)
-CREATE TABLE "Event" (
+-- Create Quest Table
+CREATE TABLE "Quest" (
     "id" SERIAL PRIMARY KEY,
-    "title" TEXT NOT NULL,
+    "title" VARCHAR(255) NOT NULL,
     "description" TEXT NOT NULL,
-    "venue" TEXT NOT NULL,
-    "category" TEXT NOT NULL,
-    "bannerUrl" TEXT,
-    "startTime" TIMESTAMP(3) NOT NULL,
-    "endTime" TIMESTAMP(3) NOT NULL,
-    "capacity" INTEGER NOT NULL CHECK ("capacity" > 0),
-    "status" "EventStatus" NOT NULL DEFAULT 'PENDING',
-    "rejectionReason" TEXT,
-    "clubId" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Event_clubId_fkey"
-        FOREIGN KEY ("clubId") REFERENCES "Club"("id")
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Event_time_check"
-        CHECK ("endTime" > "startTime")
+    "venue" VARCHAR(255) NOT NULL,
+    "capacity" INTEGER NOT NULL,
+    "xpReward" INTEGER NOT NULL DEFAULT 50,
+    "status" "QuestStatus" NOT NULL DEFAULT 'PENDING',
+    "startTime" TIMESTAMP NOT NULL,
+    "endTime" TIMESTAMP NOT NULL,
+    "guildId" INTEGER NOT NULL,
+    CONSTRAINT "Quest_guildId_fkey" FOREIGN KEY ("guildId") REFERENCES "Guild"("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
--- Registration Table (M:N bridge between User and Event)
+-- Create Registration Table
 CREATE TABLE "Registration" (
     "id" SERIAL PRIMARY KEY,
-    "userId" INTEGER NOT NULL,
-    "eventId" INTEGER NOT NULL,
-    "status" "RegStatus" NOT NULL DEFAULT 'REGISTERED',
-    "qrToken" TEXT NOT NULL UNIQUE DEFAULT gen_random_uuid()::TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Registration_userId_fkey"
-        FOREIGN KEY ("userId") REFERENCES "User"("id")
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Registration_eventId_fkey"
-        FOREIGN KEY ("eventId") REFERENCES "Event"("id")
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Registration_userId_eventId_key"
-        UNIQUE ("userId", "eventId")
+    "heroId" INTEGER NOT NULL,
+    "questId" INTEGER NOT NULL,
+    "qrToken" VARCHAR(255) NOT NULL UNIQUE,
+    "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Registration_heroId_fkey" FOREIGN KEY ("heroId") REFERENCES "Hero"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Registration_questId_fkey" FOREIGN KEY ("questId") REFERENCES "Quest"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    UNIQUE ("heroId", "questId")
 );
 
--- Attendance Table (1:1 relationship with Registration)
-CREATE TABLE "Attendance" (
+-- Create Badge Table
+CREATE TABLE "Badge" (
     "id" SERIAL PRIMARY KEY,
-    "registrationId" INTEGER NOT NULL UNIQUE,
-    "checkedInAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Attendance_registrationId_fkey"
-        FOREIGN KEY ("registrationId") REFERENCES "Registration"("id")
-        ON DELETE RESTRICT ON UPDATE CASCADE
+    "heroId" INTEGER NOT NULL,
+    "questId" INTEGER NOT NULL,
+    "earnedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Badge_heroId_fkey" FOREIGN KEY ("heroId") REFERENCES "Hero"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Badge_questId_fkey" FOREIGN KEY ("questId") REFERENCES "Quest"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    UNIQUE ("heroId", "questId")
 );
-
--- Notification Table (N:1 relationship with User)
-CREATE TABLE "Notification" (
-    "id" SERIAL PRIMARY KEY,
-    "userId" INTEGER NOT NULL,
-    "message" TEXT NOT NULL,
-    "isRead" BOOLEAN NOT NULL DEFAULT FALSE,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Notification_userId_fkey"
-        FOREIGN KEY ("userId") REFERENCES "User"("id")
-        ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- 3. Performance Indexes for Common Query Patterns
-CREATE INDEX "Event_clubId_idx" ON "Event"("clubId");
-CREATE INDEX "Event_status_startTime_idx" ON "Event"("status", "startTime");
-CREATE INDEX "Registration_eventId_status_idx" ON "Registration"("eventId", "status");
-CREATE INDEX "Notification_userId_isRead_idx" ON "Notification"("userId", "isRead");
