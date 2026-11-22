@@ -1,0 +1,24 @@
+BEGIN
+                                                                         QUERY PLAN                                                                          
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Nested Loop  (cost=0.45..24.56 rows=1 width=80) (actual time=0.008..0.008 rows=0.00 loops=1)
+   Buffers: shared hit=1
+   ->  Nested Loop  (cost=0.30..16.36 rows=1 width=44) (actual time=0.008..0.008 rows=0.00 loops=1)
+         Buffers: shared hit=1
+         ->  Index Scan using "Registration_qrToken_key" on "Registration" r  (cost=0.15..8.17 rows=1 width=12) (actual time=0.008..0.008 rows=0.00 loops=1)
+               Index Cond: ("qrToken" = '550e8400-e29b-41d4-a716-446655440000'::text)
+               Index Searches: 1
+               Buffers: shared hit=1
+         ->  Index Scan using "Hero_pkey" on "Hero" h  (cost=0.15..8.17 rows=1 width=36) (never executed)
+               Index Cond: (id = r."heroId")
+               Index Searches: 0
+   ->  Index Scan using "Quest_pkey" on "Quest" q  (cost=0.15..8.17 rows=1 width=40) (never executed)
+         Index Cond: (id = r."questId")
+         Index Searches: 0
+ Planning:
+   Buffers: shared hit=299
+ Planning Time: 0.862 ms
+ Execution Time: 0.048 ms
+(18 rows)
+
+ROLLBACK

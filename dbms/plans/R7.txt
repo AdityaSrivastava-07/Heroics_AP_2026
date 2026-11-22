@@ -1,0 +1,31 @@
+BEGIN
+                                                           QUERY PLAN                                                           
+--------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=35.59..35.60 rows=3 width=140) (actual time=0.027..0.028 rows=0.00 loops=1)
+   Sort Key: q."startTime"
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=5
+   ->  Nested Loop  (cost=16.56..35.57 rows=3 width=140) (actual time=0.016..0.017 rows=0.00 loops=1)
+         Buffers: shared hit=2
+         ->  Hash Join  (cost=16.41..34.83 rows=3 width=112) (actual time=0.016..0.016 rows=0.00 loops=1)
+               Hash Cond: (g.id = q."guildId")
+               Buffers: shared hit=2
+               ->  Seq Scan on "Guild" g  (cost=0.00..16.10 rows=610 width=40) (actual time=0.006..0.006 rows=1.00 loops=1)
+                     Buffers: shared hit=1
+               ->  Hash  (cost=16.38..16.38 rows=3 width=80) (actual time=0.005..0.006 rows=0.00 loops=1)
+                     Buckets: 1024  Batches: 1  Memory Usage: 8kB
+                     Buffers: shared hit=1
+                     ->  Seq Scan on "Quest" q  (cost=0.00..16.38 rows=3 width=80) (actual time=0.005..0.005 rows=0.00 loops=1)
+                           Filter: (status = 'PENDING'::"QuestStatus")
+                           Rows Removed by Filter: 7
+                           Buffers: shared hit=1
+         ->  Index Scan using "Hero_pkey" on "Hero" h  (cost=0.15..0.25 rows=1 width=36) (never executed)
+               Index Cond: (id = g."headId")
+               Index Searches: 0
+ Planning:
+   Buffers: shared hit=299
+ Planning Time: 0.689 ms
+ Execution Time: 0.068 ms
+(25 rows)
+
+ROLLBACK

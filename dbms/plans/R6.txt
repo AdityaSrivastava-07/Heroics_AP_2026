@@ -1,0 +1,34 @@
+BEGIN
+                                                                          QUERY PLAN                                                                          
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=33.13..33.15 rows=8 width=76) (actual time=0.029..0.030 rows=0.00 loops=1)
+   Sort Key: b."earnedAt" DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=5
+   ->  Nested Loop  (cost=14.62..33.01 rows=8 width=76) (actual time=0.016..0.016 rows=0.00 loops=1)
+         Buffers: shared hit=2
+         ->  Hash Join  (cost=14.47..30.92 rows=8 width=48) (actual time=0.015..0.016 rows=0.00 loops=1)
+               Hash Cond: (q.id = b."questId")
+               Buffers: shared hit=2
+               ->  Seq Scan on "Quest" q  (cost=0.00..15.10 rows=510 width=44) (actual time=0.006..0.006 rows=1.00 loops=1)
+                     Buffers: shared hit=1
+               ->  Hash  (cost=14.37..14.37 rows=8 width=12) (actual time=0.005..0.005 rows=0.00 loops=1)
+                     Buckets: 1024  Batches: 1  Memory Usage: 8kB
+                     Buffers: shared hit=1
+                     ->  Bitmap Heap Scan on "Badge" b  (cost=4.21..14.37 rows=8 width=12) (actual time=0.005..0.005 rows=0.00 loops=1)
+                           Recheck Cond: ("heroId" = 1)
+                           Buffers: shared hit=1
+                           ->  Bitmap Index Scan on "Badge_heroId_questId_key"  (cost=0.00..4.21 rows=8 width=0) (actual time=0.002..0.002 rows=0.00 loops=1)
+                                 Index Cond: ("heroId" = 1)
+                                 Index Searches: 1
+                                 Buffers: shared hit=1
+         ->  Index Scan using "Guild_pkey" on "Guild" g  (cost=0.15..0.26 rows=1 width=36) (never executed)
+               Index Cond: (id = q."guildId")
+               Index Searches: 0
+ Planning:
+   Buffers: shared hit=294
+ Planning Time: 0.683 ms
+ Execution Time: 0.073 ms
+(28 rows)
+
+ROLLBACK
