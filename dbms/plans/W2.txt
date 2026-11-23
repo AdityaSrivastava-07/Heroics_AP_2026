@@ -1,0 +1,16 @@
+BEGIN
+                                                          QUERY PLAN                                                          
+------------------------------------------------------------------------------------------------------------------------------
+ Update on "Hero"  (cost=0.15..8.19 rows=0 width=0) (actual time=0.072..0.073 rows=0.00 loops=1)
+   Buffers: shared hit=12
+   ->  Index Scan using "Hero_pkey" on "Hero"  (cost=0.15..8.19 rows=1 width=14) (actual time=0.010..0.010 rows=1.00 loops=1)
+         Index Cond: (id = 1)
+         Index Searches: 1
+         Buffers: shared hit=2
+ Planning:
+   Buffers: shared hit=94
+ Planning Time: 0.316 ms
+ Execution Time: 0.140 ms
+(10 rows)
+
+ROLLBACK

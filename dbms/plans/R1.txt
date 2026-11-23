@@ -1,0 +1,14 @@
+BEGIN
+                                                          QUERY PLAN                                                          
+------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using "Hero_email_key" on "Hero"  (cost=0.15..8.17 rows=1 width=112) (actual time=0.008..0.008 rows=0.00 loops=1)
+   Index Cond: (email = 'student@nst.edu'::text)
+   Index Searches: 1
+   Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=100
+ Planning Time: 0.281 ms
+ Execution Time: 0.032 ms
+(8 rows)
+
+ROLLBACK

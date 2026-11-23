@@ -1,0 +1,20 @@
+BEGIN
+                                                   QUERY PLAN                                                    
+-----------------------------------------------------------------------------------------------------------------
+ Limit  (cost=16.90..16.91 rows=3 width=52) (actual time=0.024..0.025 rows=6.00 loops=1)
+   Buffers: shared hit=7
+   ->  Sort  (cost=16.90..16.91 rows=3 width=52) (actual time=0.023..0.024 rows=6.00 loops=1)
+         Sort Key: xp DESC, "createdAt"
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=7
+         ->  Seq Scan on "Hero"  (cost=0.00..16.88 rows=3 width=52) (actual time=0.007..0.008 rows=6.00 loops=1)
+               Filter: (role = 'HERO'::"Role")
+               Rows Removed by Filter: 6
+               Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=124
+ Planning Time: 0.317 ms
+ Execution Time: 0.043 ms
+(14 rows)
+
+ROLLBACK

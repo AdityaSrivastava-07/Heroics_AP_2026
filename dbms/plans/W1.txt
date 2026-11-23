@@ -1,0 +1,29 @@
+BEGIN
+                                                     QUERY PLAN                                                      
+---------------------------------------------------------------------------------------------------------------------
+ Insert on "Registration"  (cost=0.06..0.08 rows=0 width=0) (actual time=0.230..0.231 rows=0.00 loops=1)
+   Conflict Resolution: NOTHING
+   Tuples Inserted: 1
+   Conflicting Tuples: 0
+   Buffers: shared hit=82
+   InitPlan 1
+     ->  Limit  (cost=0.00..0.03 rows=1 width=4) (actual time=0.009..0.010 rows=1.00 loops=1)
+           Buffers: shared hit=1
+           ->  Seq Scan on "Hero"  (cost=0.00..15.50 rows=550 width=4) (actual time=0.009..0.009 rows=1.00 loops=1)
+                 Buffers: shared hit=1
+   InitPlan 2
+     ->  Limit  (cost=0.00..0.03 rows=1 width=4) (actual time=0.004..0.004 rows=1.00 loops=1)
+           Buffers: shared hit=1
+           ->  Seq Scan on "Quest"  (cost=0.00..15.10 rows=510 width=4) (actual time=0.004..0.004 rows=1.00 loops=1)
+                 Buffers: shared hit=1
+   ->  Result  (cost=0.00..0.02 rows=1 width=52) (actual time=0.063..0.064 rows=1.00 loops=1)
+         Buffers: shared hit=17
+ Planning:
+   Buffers: shared hit=139
+ Planning Time: 0.607 ms
+ Trigger for constraint Registration_heroId_fkey: time=0.234 calls=1
+ Trigger for constraint Registration_questId_fkey: time=0.058 calls=1
+ Execution Time: 0.563 ms
+(23 rows)
+
+ROLLBACK

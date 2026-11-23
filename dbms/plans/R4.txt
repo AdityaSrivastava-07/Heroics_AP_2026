@@ -1,0 +1,32 @@
+BEGIN
+                                                              QUERY PLAN                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=39.49..39.50 rows=3 width=60) (actual time=0.029..0.030 rows=0.00 loops=1)
+   Sort Key: q."startTime" DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=7
+   ->  GroupAggregate  (cost=39.39..39.46 rows=3 width=60) (actual time=0.020..0.021 rows=0.00 loops=1)
+         Group Key: q.id
+         Buffers: shared hit=4
+         ->  Sort  (cost=39.39..39.40 rows=6 width=56) (actual time=0.019..0.020 rows=0.00 loops=1)
+               Sort Key: q.id
+               Sort Method: quicksort  Memory: 25kB
+               Buffers: shared hit=4
+               ->  Hash Right Join  (cost=16.41..39.31 rows=6 width=56) (actual time=0.011..0.012 rows=0.00 loops=1)
+                     Hash Cond: (r."questId" = q.id)
+                     Buffers: shared hit=1
+                     ->  Seq Scan on "Registration" r  (cost=0.00..20.20 rows=1020 width=8) (never executed)
+                     ->  Hash  (cost=16.38..16.38 rows=3 width=52) (actual time=0.007..0.007 rows=0.00 loops=1)
+                           Buckets: 1024  Batches: 1  Memory Usage: 8kB
+                           Buffers: shared hit=1
+                           ->  Seq Scan on "Quest" q  (cost=0.00..16.38 rows=3 width=52) (actual time=0.006..0.006 rows=0.00 loops=1)
+                                 Filter: ("guildId" = 1)
+                                 Rows Removed by Filter: 7
+                                 Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=186
+ Planning Time: 0.487 ms
+ Execution Time: 0.099 ms
+(26 rows)
+
+ROLLBACK
